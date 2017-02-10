@@ -10,7 +10,6 @@ public class AINode {
 	
 	private Integer score = null;
 	private PieceColor[][] boardData = new PieceColor[15][15];
-	private AINode parentNode;
 	private Position position;
 	private Position winPosition;
 	private List<Position> dangerousPositions = new ArrayList<>();
@@ -55,6 +54,10 @@ public class AINode {
 		this.subNode = subNode;
 	}
 	
+	public boolean needMoreThink() {
+		return dangerousPositions.size() > 0;
+	}
+	
 	
 
 	/*
@@ -78,7 +81,6 @@ public class AINode {
 	 *  First Node.
 	 */
 	public AINode(Board board) {
-		this.parentNode = null;
 		this.boardData = Arrays.stream(board.getBoardData()).map(PieceColor[]::clone).toArray(PieceColor[][]::new);
 		this.position = new Position(board.getLatestPiece());
 	}
@@ -87,14 +89,12 @@ public class AINode {
 	 * 	Construct node from parent node.
 	 */
 	public AINode(AINode parentNode, int col, int row) {
-		this.parentNode = parentNode;
 		this.boardData = Arrays.stream(parentNode.getBoardData()).map(PieceColor[]::clone).toArray(PieceColor[][]::new);
 		this.position = new Position(col, row);
 		boardData[col][row] = parentNode.getColor().changeColor();
 	}
 	
 	public AINode(AINode parentNode, Position position) {
-		this.parentNode = parentNode;
 		this.boardData = Arrays.stream(parentNode.getBoardData()).map(PieceColor[]::clone).toArray(PieceColor[][]::new);
 		this.position = new Position(position.col, position.row);
 		boardData[position.col][position.row] = parentNode.getColor().changeColor();

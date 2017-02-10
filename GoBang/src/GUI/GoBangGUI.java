@@ -29,7 +29,7 @@ public class GoBangGUI implements Observer{
 	private PlayerPanel blackPlayerPanel;
 	private PlayerPanel whitePlayerPanel;
 	private Board board = new Board();
-	private AIAgent agent = new AIAgent();
+	private AIAgent agent = new AIAgent(PieceColor.White);
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	/**
@@ -104,12 +104,12 @@ public class GoBangGUI implements Observer{
 			}
 		});
 		
-		blackPlayerPanel = new PlayerPanel();
+		blackPlayerPanel = new PlayerPanel(PieceColor.Black);
 		blackPlayerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		blackPlayerPanel.setBounds(10, 10, 200, 400);
 		frame.getContentPane().add(blackPlayerPanel);
 		
-		whitePlayerPanel = new PlayerPanel();
+		whitePlayerPanel = new PlayerPanel(PieceColor.White);
 		whitePlayerPanel.setBorder(new LineBorder(new Color(0, 0, 0)));
 		whitePlayerPanel.setBounds(680, 10, 200, 400);
 		frame.getContentPane().add(whitePlayerPanel);

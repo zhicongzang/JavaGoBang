@@ -12,6 +12,11 @@ public class AIAgent{
 	private int level = 4;
 	private PieceColor pieceColor = PieceColor.White;
 	
+	public AIAgent(PieceColor pieceColor) {
+		// TODO Auto-generated constructor stub
+		this.pieceColor = pieceColor;
+	}
+	
 	public Piece run(Board board) {
 		AINode node = minimaxSearch(new AINode(board), level, Integer.MIN_VALUE, Integer.MAX_VALUE, pieceColor.equals(PieceColor.Black));
 		System.out.println(node.toString());
@@ -33,7 +38,7 @@ public class AIAgent{
 		}
 		AINode tempNode = null;
 		for(AINode node: currentNode.exploreNodes()) {
-			node.setSubNode(minimaxSearch(node, depth - 1, alpha, beta, !isMax));
+			node.setSubNode(minimaxSearch(node, node.needMoreThink() ? depth :depth - 1, alpha, beta, !isMax));
 			if (isMax) {
 				if (tempNode == null || tempNode.getScore() < node.getScore()) {
 					tempNode = node;
