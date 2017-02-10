@@ -18,10 +18,10 @@ public enum PlayerType {
 		}
 	}
 	
-	public AIAgent getAgent() {
+	public AIAgent getAgent(PieceColor pieceColor) {
 		switch (this) {
 		case AI:
-			return new AIAgent();
+			return new AIAgent(pieceColor);
 		default:
 			return null;
 		}
