@@ -2,13 +2,18 @@ package GUI;
 
 import java.awt.EventQueue;
 import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -28,8 +33,9 @@ public class GoBangGUI implements Observer{
 	private BoardPanel boardPanel;
 	private PlayerPanel blackPlayerPanel;
 	private PlayerPanel whitePlayerPanel;
+	private JButton goButton;
 	private Board board = new Board();
-	private AIAgent agent = new AIAgent(PieceColor.White);
+	private List<AIAgent> agents = new ArrayList<>();
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
 
 	/**
@@ -72,6 +78,9 @@ public class GoBangGUI implements Observer{
 			@Override
 			public void mouseReleased(MouseEvent e) {
 				// TODO Auto-generated method stub
+				if (!boardPanel.isTouchable()) {
+					return;
+				}
 				Point point = e.getPoint();
 				Piece piece = board.addPiece(boardPanel.pointToCol(point), boardPanel.pointToRow(point));
 				if (piece != null) {
@@ -80,28 +89,16 @@ public class GoBangGUI implements Observer{
 			}
 			
 			@Override
-			public void mousePressed(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mousePressed(MouseEvent e) { }
 			
 			@Override
-			public void mouseExited(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mouseExited(MouseEvent e) { }
 			
 			@Override
-			public void mouseEntered(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mouseEntered(MouseEvent e) { }
 			
 			@Override
-			public void mouseClicked(MouseEvent e) {
-				// TODO Auto-generated method stub
-				
-			}
+			public void mouseClicked(MouseEvent e) { }
 		});
 		
 		blackPlayerPanel = new PlayerPanel(PieceColor.Black);
@@ -114,7 +111,16 @@ public class GoBangGUI implements Observer{
 		whitePlayerPanel.setBounds(680, 10, 200, 400);
 		frame.getContentPane().add(whitePlayerPanel);
 		
+		goButton = new JButton("Go");
+		goButton.setBounds(60,420, 100, 40);
+		frame.getContentPane().add(goButton);
+		goButton.addActionListener(ae -> {
+			startGame();
+		});
+		
 		board.addObserver(this);
+		
+		endGame();
 		
 	}
 
@@ -137,14 +143,29 @@ public class GoBangGUI implements Observer{
 			endGame();
 			return;
 		}
-		if (pieceColor.equals(agent.getPieceColor())) {
-			executor.execute( () -> {
-				Piece piece = agent.run(board);
-				piece = board.addPiece(piece.getCol(), piece.getRow());
-				if (piece != null) {
-					boardPanel.addPiece(piece);
-				}
-			});
+		switch (agents.size()) {
+		case 0:
+			boardPanel.setTouchable(true);
+			break;
+		case 1:
+			boardPanel.setTouchable(!pieceColor.equals(agents.get(0).getPieceColor()));
+			break;
+		default:
+			boardPanel.setTouchable(false);
+			break;
+		}
+		whitePlayerPanel.setInTurns(pieceColor);
+		blackPlayerPanel.setInTurns(pieceColor);
+		for (AIAgent agent: agents) {
+			if (pieceColor.equals(agent.getPieceColor())) {
+				executor.execute( () -> {
+					Piece piece = agent.run(board);
+					piece = board.addPiece(piece.getCol(), piece.getRow());
+					if (piece != null) {
+						boardPanel.addPiece(piece);
+					}
+				});
+			}
 		}
 	}
 	
@@ -152,14 +173,28 @@ public class GoBangGUI implements Observer{
 	 * 	Game start
 	 */
 	private void startGame(){
+		AIAgent whiteAgent = whitePlayerPanel.start();
+		AIAgent blackAgent = blackPlayerPanel.start();
+		goButton.setEnabled(false);
+		if (blackAgent != null) {
+			agents.add(blackAgent);
+		}
+		if (whiteAgent != null) {
+			agents.add(whiteAgent);
+		}
 		boardPanel.reset();
 		board.reset();
+		
 	}
 	
 	/*
 	 *	Game end 
 	 */
 	private void endGame() {
-		startGame();
+		boardPanel.setTouchable(false);
+		goButton.setEnabled(true);
+		whitePlayerPanel.end();
+		blackPlayerPanel.end();
+		agents.clear();
 	}
 }
