@@ -283,7 +283,7 @@ public class AINode {
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
-            }  else {
+            } else {
                 lastIsEmpty = true;
                 ps.add(new Position(c,r));
                 c += 1;

@@ -1,6 +1,9 @@
 package AI;
 
 
+import java.util.ArrayList;
+import java.util.List;
+
 import model.AINode;
 import model.Board;
 import model.Piece;
@@ -9,15 +12,22 @@ import model.Score;
 
 public class AIAgent{
 	
-	private int level = 4;
-	private PieceColor pieceColor = PieceColor.White;
+	private int level = 3;
+	private PieceColor pieceColor;
+	private List<Piece> piecesWaitingList = new ArrayList<>();
 	
 	public AIAgent(PieceColor pieceColor) {
 		// TODO Auto-generated constructor stub
 		this.pieceColor = pieceColor;
+		if (pieceColor.equals(PieceColor.Black)) {
+			piecesWaitingList.add(new Piece(7, 7, pieceColor));
+		}
 	}
 	
 	public Piece run(Board board) {
+		if (piecesWaitingList.size() > 0) {
+			return piecesWaitingList.remove(0);
+		}
 		AINode node = minimaxSearch(new AINode(board), level, Integer.MIN_VALUE, Integer.MAX_VALUE, pieceColor.equals(PieceColor.Black));
 		System.out.println(node.toString());
 		return node.getPiece();

@@ -23,6 +23,12 @@ public class BoardPanel extends JPanel {
 	
 	private List<Piece> pieces = new ArrayList<>();
 	
+	private boolean isTouchable = false;
+	
+	public BoardPanel() {
+		super();
+	}
+	
 	@Override
 	public void setBounds(int x, int y, int width, int height) {
 		// TODO Auto-generated method stub
@@ -96,5 +102,16 @@ public class BoardPanel extends JPanel {
 	public void reset() {
 		pieces = new ArrayList<>();
 		repaint();
+		isTouchable = false;
 	}
+
+	public boolean isTouchable() {
+		return isTouchable;
+	}
+
+	public void setTouchable(boolean isTouchable) {
+		this.isTouchable = isTouchable;
+	}
+	
+	
 }
