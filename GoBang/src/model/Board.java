@@ -1,11 +1,10 @@
 package model;
 
-import java.util.Arrays;
 import java.util.Observable;
 
 public class Board extends Observable {
 	
-	private PieceColor[][] boardData = new PieceColor[15][15];
+	private BoardData boardData = new BoardData();
 	private PieceColor currentPieceColor = PieceColor.Black;
 	
 	private Piece latestPiece;
@@ -28,7 +27,7 @@ public class Board extends Observable {
 	/*
 	 * Get boardData
 	 */
-	public PieceColor[][] getBoardData() {
+	public BoardData getBoardData() {
 		return boardData;
 	}
 	
@@ -37,7 +36,7 @@ public class Board extends Observable {
 	 */
 	public void reset() {
 		latestPiece = null;
-		boardData = new PieceColor[15][15];
+		boardData = new BoardData();
 		currentPieceColor = PieceColor.Black;
 		setChanged();
 		notifyObservers();
@@ -47,8 +46,7 @@ public class Board extends Observable {
 	 * 	Add piece into board. Return Piece if succeeded else return null. Notify observers that board state has been changed.
 	 */
 	public Piece addPiece(int col, int row) {
-		if(col >=0 && col < 15 && row >=0 && row < 15 && boardData[col][row] == null) {
-			boardData[col][row] = currentPieceColor;
+		if(boardData.addPiece(col, row, currentPieceColor)) {
 			latestPiece = new Piece(col, row, currentPieceColor);
 			currentPieceColor = currentPieceColor.changeColor();
 			setChanged();
@@ -69,6 +67,6 @@ public class Board extends Observable {
 	}
 	
 	private boolean checkLatestPieceWinState() {
-		return Utils.checkIsWin(boardData, latestPiece.getColor(), latestPiece.getCol(), latestPiece.getRow());
+		return Utils.checkIsWin(boardData.getData(), latestPiece.getColor(), latestPiece.getCol(), latestPiece.getRow());
 	}
 }

@@ -7,6 +7,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -20,6 +21,7 @@ import javax.swing.JPanel;
 
 import AI.AIAgent;
 import model.Board;
+import model.BoardDataScoresMap;
 import model.Piece;
 import model.PieceColor;
 import model.Score;
@@ -137,7 +139,9 @@ public class GoBangGUI implements Observer{
 	 */
 	private void changeSide(PieceColor pieceColor) {
 		System.out.println("Now: " + Score.getScore(board.getBoardData()));
+		System.out.println("Now Hash Code: " + board.getBoardData().hashCode());
 		System.out.println("================");
+		BoardDataScoresMap.getInstance().update();
 		if (board.isEnd()) {
 			System.out.println("Game Over   " + board.getLatestPiece().getColor().toString());
 			endGame();

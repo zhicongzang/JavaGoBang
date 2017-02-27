@@ -9,7 +9,7 @@ import javax.print.attribute.standard.RequestingUserName;
 public class AINode {
 	
 	private Integer score = null;
-	private PieceColor[][] boardData = new PieceColor[15][15];
+	private BoardData boardData = new BoardData();
 	private Position position;
 	private Position winPosition;
 	private List<Position> dangerousPositions = new ArrayList<>();
@@ -19,7 +19,7 @@ public class AINode {
 	@Override
 	public int hashCode() {
 		// TODO Auto-generated method stub
-		return Arrays.hashCode(boardData) * 7 + 13;
+		return boardData.hashCode() * 7 + 13;
 	}
 	
 	@Override
@@ -27,7 +27,7 @@ public class AINode {
 		// TODO Auto-generated method stub
 		if (obj instanceof AINode) {
 			AINode node = (AINode) obj;
-			return Arrays.equals(boardData, node.getBoardData());
+			return boardData.equals(node.boardData);
 		}
 		return false;
 	}
@@ -38,11 +38,11 @@ public class AINode {
 		return "Col: " + position.col + " Row: " + position.row +  " Socre: " + getScore();
 	}
 
-	public PieceColor[][] getBoardData() {
+	public BoardData getBoardData() {
 		return boardData;
 	}
 
-	public void setBoardData(PieceColor[][] boardData) {
+	public void setBoardData(BoardData boardData) {
 		this.boardData = boardData;
 	}
 	
@@ -67,11 +67,11 @@ public class AINode {
 		if (position.col < 0 || position.col > 14 || position.row < 0 || position.row > 14) {
 			return PieceColor.Black;
 		}
-		return boardData[position.col][position.row];
+		return boardData.getData()[position.col][position.row];
 	}
 	
 	public boolean isExplorable() {
-		if (!Utils.checkIsWin(boardData, getColor(), position.col, position.row)) {
+		if (!Utils.checkIsWin(boardData.getData(), getColor(), position.col, position.row)) {
 			return true;
 		}
 		return false;
@@ -81,7 +81,7 @@ public class AINode {
 	 *  First Node.
 	 */
 	public AINode(Board board) {
-		this.boardData = Arrays.stream(board.getBoardData()).map(PieceColor[]::clone).toArray(PieceColor[][]::new);
+		this.boardData = new BoardData(board.getBoardData());
 		this.position = new Position(board.getLatestPiece());
 	}
 	
@@ -89,15 +89,15 @@ public class AINode {
 	 * 	Construct node from parent node.
 	 */
 	public AINode(AINode parentNode, int col, int row) {
-		this.boardData = Arrays.stream(parentNode.getBoardData()).map(PieceColor[]::clone).toArray(PieceColor[][]::new);
+		this.boardData = new BoardData(parentNode.getBoardData());
 		this.position = new Position(col, row);
-		boardData[col][row] = parentNode.getColor().changeColor();
+		boardData.addToData(col, row, parentNode.getColor().changeColor());
 	}
 	
 	public AINode(AINode parentNode, Position position) {
-		this.boardData = Arrays.stream(parentNode.getBoardData()).map(PieceColor[]::clone).toArray(PieceColor[][]::new);
+		this.boardData = new BoardData(parentNode.getBoardData());
 		this.position = new Position(position.col, position.row);
-		boardData[position.col][position.row] = parentNode.getColor().changeColor();
+		boardData.addToData(position.col, position.row, parentNode.getColor().changeColor());
 	}
 	
 	private void generatePossiblePositions() {
@@ -110,7 +110,7 @@ public class AINode {
 				if (positionIsValid(c, r, 1, 1)) {
 					Position p = new Position(c, r);
 					possiblePositions.add(p);
-					if (Utils.checkIsWin(boardData, getColor().changeColor(), c, r)) {
+					if (Utils.checkIsWin(boardData.getData(), getColor().changeColor(), c, r)) {
 						winPosition = p;
 						return;
 					}
@@ -144,8 +144,9 @@ public class AINode {
         boolean lastIsEmpty = false;
         boolean isDead = false;
         ArrayList<Position> ps = new ArrayList<>();
+        PieceColor[][] data = boardData.getData();
         while(r>=0) {
-        	color = boardData[position.col][r];
+        	color = data[position.col][r];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 r -= 1;
@@ -166,7 +167,7 @@ public class AINode {
         lastIsEmpty = false;
         emptyCount = 0;
         while(r<15) {
-        	color = boardData[position.col][r];
+        	color = data[position.col][r];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 r += 1;
@@ -195,8 +196,9 @@ public class AINode {
         boolean lastIsEmpty = false;
         boolean isDead = false;
         ArrayList<Position> ps = new ArrayList<>();
+        PieceColor[][] data = boardData.getData();
         while(c>=0) {
-        	color = boardData[c][position.row];
+        	color = data[c][position.row];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 c -= 1;
@@ -217,7 +219,7 @@ public class AINode {
         lastIsEmpty = false;
         emptyCount = 0;
         while(c<15) {
-        	color = boardData[c][position.row];
+        	color = data[c][position.row];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 c += 1;
@@ -247,8 +249,9 @@ public class AINode {
         boolean lastIsEmpty = false;
         boolean isDead = false;
         ArrayList<Position> ps = new ArrayList<>();
+        PieceColor[][] data = boardData.getData();
         while(c>=0 && r >=0) {
-            color = boardData[c][r];
+            color = data[c][r];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 c -= 1;
@@ -272,7 +275,7 @@ public class AINode {
         lastIsEmpty = false;
         emptyCount = 0;
         while(c<15 && r<15) {
-        	color = boardData[c][r];
+        	color = data[c][r];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 c += 1;
@@ -304,8 +307,9 @@ public class AINode {
         boolean lastIsEmpty = false;
         boolean isDead = false;
         ArrayList<Position> ps = new ArrayList<>();
+        PieceColor[][] data = boardData.getData();
         while(c>=0 && r<15) {
-            color = boardData[c][r];
+            color = data[c][r];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 c -= 1;
@@ -329,7 +333,7 @@ public class AINode {
         lastIsEmpty = false;
         emptyCount = 0;
         while(c<15 && r>=0) {
-        	color = boardData[c][r];
+        	color = data[c][r];
             if (color != null && color.equals(getColor())) {
                 count += 1;
                 c += 1;
@@ -360,8 +364,9 @@ public class AINode {
             for(Position p: ps) {
                 int pc = p.col;
                 int pr = p.row;
-                if (pr+1<15 && boardData[pc][pr+1] != null
-                        && pr-1>=0 && boardData[pc][pr-1] != null) {
+                PieceColor[][] data = boardData.getData();
+                if (pr+1<15 && data[pc][pr+1] != null
+                        && pr-1>=0 && data[pc][pr-1] != null) {
                     possiblePositions.add(p);
                     return;
                 }
@@ -379,7 +384,8 @@ public class AINode {
 	}
 	
 	private boolean positionIsValid(int col, int row, int neighborDistace, int neighborCount) {
-		if (boardData[col][row] == null) {
+		PieceColor[][] data = boardData.getData();
+		if (data[col][row] == null) {
 			int count = 0;
 			int colStart = col - neighborDistace >= 0 ? col - neighborDistace : 0;
 			int colEnd = col + neighborDistace < 15 ? col + neighborDistace : 14;
@@ -387,7 +393,7 @@ public class AINode {
 			int rowEnd = row + neighborDistace < 15 ? row + neighborDistace : 14;
 			for(int c=colStart; c<=colEnd; c++) {
 				for(int r=rowStart; r<=rowEnd; r++) {
-					if (boardData[c][r] != null) {
+					if (data[c][r] != null) {
 						count += 1;
 						if (count >= neighborCount) {
 							return true;

@@ -28,6 +28,8 @@ public enum Score {
 		put(ZERO, 0);
 	}};
 	
+	static private BoardDataScoresMap  BOARD_DATA_SCORES_MAP = BoardDataScoresMap.getInstance();
+	
 	public int getScore() {
 		return SCORE_MAP.get(this);
 	}
@@ -143,17 +145,22 @@ public enum Score {
 		return score;
 	}
 	
-	static public int getScore(PieceColor[][] boardData) {
+	static public int getScore(BoardData boardData) {
+		int key = boardData.hashCode();
+		if (BOARD_DATA_SCORES_MAP.containsKey(key)) {
+			return BOARD_DATA_SCORES_MAP.get(key);
+		}
+		PieceColor[][] data = boardData.getData();
 		int score = 0;
 		// col
 		for(int c=0; c<15; c++) {
-			score += Score.getScore(new ArrayList<PieceColor>(Arrays.asList(boardData[c])));
+			score += Score.getScore(new ArrayList<PieceColor>(Arrays.asList(data[c])));
 		}
 		ArrayList<PieceColor> aList = new ArrayList<>();
 		// row
 		for(int r=0; r<15; r++) {
 			for(int c=0; c<15; c++) {
-				aList.add(boardData[c][r]);
+				aList.add(data[c][r]);
 			}
 			score += Score.getScore(aList);
 			aList.clear();
@@ -161,14 +168,14 @@ public enum Score {
 		// left - top
 		for(int c=0; c<11; c++) {
 			for(int i=0; i+c<15; i++) {
-				aList.add(boardData[c+i][i]);
+				aList.add(data[c+i][i]);
 			}
 			score += Score.getScore(aList);
 			aList.clear();
 		}
 		for(int r=1; r<11; r++) {
 			for(int i=0; i+r<15; i++) {
-				aList.add(boardData[i][r+i]);
+				aList.add(data[i][r+i]);
 			}
 			score += Score.getScore(aList);
 			aList.clear();
@@ -176,18 +183,19 @@ public enum Score {
 		// left - bottom
 		for(int c=0; c<11; c++) {
 			for(int i=0; i+c<15; i++) {
-				aList.add(boardData[c+i][14-i]);
+				aList.add(data[c+i][14-i]);
 			}
 			score += Score.getScore(aList);
 			aList.clear();
 		}
 		for(int r=13; r>=4; r--) {
 			for(int i=0; r-i>=0; i++) {
-				aList.add(boardData[i][r-i]);
+				aList.add(data[i][r-i]);
 			}
 			score += Score.getScore(aList);
 			aList.clear();
 		}
+		BOARD_DATA_SCORES_MAP.put(key, score);
 		return score;
 	}
 	

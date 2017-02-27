@@ -3,6 +3,7 @@ package AI;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import model.AINode;
 import model.Board;
@@ -21,7 +22,19 @@ public class AIAgent{
 		this.pieceColor = pieceColor;
 		if (pieceColor.equals(PieceColor.Black)) {
 			piecesWaitingList.add(new Piece(7, 7, pieceColor));
+		} else {
+			piecesWaitingList.add(randomNeighborPiece(7, 7, pieceColor));
 		}
+	}
+	
+	private Piece randomNeighborPiece(int col, int row, PieceColor pieceColor) {
+		Random random = new Random();
+		int c,r;
+		do {
+			c = col + (random.nextInt(3) - 1);
+			r = row + (random.nextInt(3) - 1);
+		} while (c==col && r==row);
+		return new Piece(c, r, pieceColor);
 	}
 	
 	public Piece run(Board board) {
