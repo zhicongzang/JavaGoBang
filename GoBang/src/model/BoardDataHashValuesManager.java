@@ -85,4 +85,8 @@ public class BoardDataHashValuesManager {
 	public Long getHashValue(int col, int row, PieceColor pieceColor) {
 		return boardDataHashValues.get(pieceColor)[col][row];
 	}
+	
+	public Long getPreHashValue(BoardData boardData, int col, int row) {
+		return (boardData.getHashValue() ^ BoardDataHashValuesManager.getInstance().getHashValue(col, row, boardData.getData()[col][row]));
+	}
 }

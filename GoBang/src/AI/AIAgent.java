@@ -55,6 +55,7 @@ public class AIAgent{
 	 * 	isMax:			Ture -> do Max		False -> do Min
 	 * 	Alpha-beta pruning:		if alpha >= beta, pruning
 	 */
+	
 	private AINode minimaxSearch(AINode currentNode, int depth, int alpha, int beta, boolean isMax){
 		if (depth <= 0 || !currentNode.isExplorable()) {
 			return null;
@@ -63,15 +64,15 @@ public class AIAgent{
 		for(AINode node: currentNode.exploreNodes()) {
 			node.setSubNode(minimaxSearch(node, node.needMoreThink() ? depth :depth - 1, alpha, beta, !isMax));
 			if (isMax) {
-				if (tempNode == null || tempNode.getScore() < node.getScore()) {
+				if (tempNode == null || tempNode.getSubNodeScore() < node.getSubNodeScore()) {
 					tempNode = node;
 				}
-				alpha = Math.max(alpha, node.getScore());
+				alpha = Math.max(alpha, node.getSubNodeScore());
 			} else {
-				if (tempNode == null || tempNode.getScore() > node.getScore()) {
+				if (tempNode == null || tempNode.getSubNodeScore() > node.getSubNodeScore()) {
 					tempNode = node;
 				}
-				beta = Math.min(beta, node.getScore());
+				beta = Math.min(beta, node.getSubNodeScore());
 			}
 			if (alpha >= beta || alpha > Score.WIN_SCORE || beta < Score.LOSE_SCORE) {
 				break;

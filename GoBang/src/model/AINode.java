@@ -35,7 +35,7 @@ public class AINode {
 	@Override
 	public String toString() {
 		// TODO Auto-generated method stub
-		return "Col: " + position.col + " Row: " + position.row +  " Socre: " + getScore();
+		return "Col: " + position.col + " Row: " + position.row + " Estimated Score: " + getSubNodeScore();
 	}
 
 	public BoardData getBoardData() {
@@ -405,14 +405,14 @@ public class AINode {
 		return false;
 	}
 	
-	public int getScore() {
+	public int getSubNodeScore() {
 		if (subNode == null) {
 			if (score == null) {
-				score = Score.getScore(boardData);
+				score = Score.getScore(boardData, position.col, position.row);
 			}
 			return score;
 		}
-		return subNode.getScore();
+		return subNode.getSubNodeScore();
 	}
 	
 	public List<AINode> exploreNodes() {
@@ -446,7 +446,6 @@ public class AINode {
 	public Piece getPiece() {
 		return new Piece(position.col, position.row, getColor());
 	}
-	
 	
 	
 	class Position {

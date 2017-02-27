@@ -1,5 +1,6 @@
 package model;
 
+import java.awt.RenderingHints.Key;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -197,6 +198,128 @@ public enum Score {
 		}
 		BOARD_DATA_SCORES_MAP.put(key, score);
 		return score;
+	}
+	
+	static public int getScoreWithoutMap(BoardData boardData) {
+		PieceColor[][] data = boardData.getData();
+		int score = 0;
+		// col
+		for(int c=0; c<15; c++) {
+			score += Score.getScore(new ArrayList<PieceColor>(Arrays.asList(data[c])));
+		}
+		ArrayList<PieceColor> aList = new ArrayList<>();
+		// row
+		for(int r=0; r<15; r++) {
+			for(int c=0; c<15; c++) {
+				aList.add(data[c][r]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		// left - top
+		for(int c=0; c<11; c++) {
+			for(int i=0; i+c<15; i++) {
+				aList.add(data[c+i][i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		for(int r=1; r<11; r++) {
+			for(int i=0; i+r<15; i++) {
+				aList.add(data[i][r+i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		// left - bottom
+		for(int c=0; c<11; c++) {
+			for(int i=0; i+c<15; i++) {
+				aList.add(data[c+i][14-i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		for(int r=13; r>=4; r--) {
+			for(int i=0; r-i>=0; i++) {
+				aList.add(data[i][r-i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		return score;
+	}
+	
+	static private int getScoreByPosition(PieceColor[][] data, int col, int row) {
+		int score = 0;
+		// col
+		score += Score.getScore(new ArrayList<PieceColor>(Arrays.asList(data[col])));
+		ArrayList<PieceColor> aList = new ArrayList<>();
+		// row
+		for(int c=0; c<15; c++) {
+			aList.add(data[c][row]);
+		}
+		score += Score.getScore(aList);
+		aList.clear();
+		// left - top
+		if (col >= row && !(col >= 11 && row <= 3)) {
+			for(int i=0; i+col-row<15; i++) {
+				aList.add(data[col-row+i][i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		} else if (col < row && !(row >= 11 && col <= 3)) {
+			for(int i=0; i+row-col<15; i++) {
+				aList.add(data[i][row-col+i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		// left - bottom
+		if (col + row >= 14 &&  col + row <= 24) {
+			for(int i=0; i+col+row-14<15; i++) {
+				aList.add(data[i+col+row-14][14-i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		} else if (col + row < 14 && col + row >= 4) {
+			for(int i=0; row+col-i>=0; i++) {
+				aList.add(data[i][row+col-i]);
+			}
+			score += Score.getScore(aList);
+			aList.clear();
+		}
+		return score;
+		
+	}
+	
+	static private int getChangedScore(BoardData boardData, int col, int row) {
+		PieceColor[][] data = boardData.getData();
+		PieceColor pieceColor = data[col][row];
+		data[col][row] = null;
+		int score = -getScoreByPosition(data, col, row);
+		data[col][row] = pieceColor;
+		score += getScoreByPosition(data, col, row);
+		return score;
+	}
+	
+	static public int getScore(BoardData preBoardData, BoardData currentBoardData, int col, int row) {
+		int currentkey = currentBoardData.hashCode();
+		int score = Score.getScore(preBoardData) + getChangedScore(currentBoardData, col, row);
+		BOARD_DATA_SCORES_MAP.put(currentkey, score);
+		return score;
+	}
+	
+	static public int getScore(BoardData boardData, int col, int row) {
+		int currentKey = boardData.hashCode();
+		if (BOARD_DATA_SCORES_MAP.containsKey(currentKey)) {
+			return BOARD_DATA_SCORES_MAP.get(currentKey);
+		}
+		int preKey = BoardDataHashValuesManager.getInstance().getPreHashValue(boardData, col, row).hashCode();
+		if (BOARD_DATA_SCORES_MAP.containsKey(preKey)) {
+			System.out.println("Get from Map");
+			return BOARD_DATA_SCORES_MAP.get(preKey) + getChangedScore(boardData, col, row);
+		}
+		return Score.getScore(boardData);
 	}
 	
 	

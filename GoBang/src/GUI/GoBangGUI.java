@@ -138,10 +138,8 @@ public class GoBangGUI implements Observer{
 	 * 	Update UI.
 	 */
 	private void changeSide(PieceColor pieceColor) {
-		System.out.println("Now: " + Score.getScore(board.getBoardData()));
-		System.out.println("Now Hash Code: " + board.getBoardData().hashCode());
+		System.out.println("Now: " + Score.getScoreWithoutMap(board.getBoardData()));
 		System.out.println("================");
-		BoardDataScoresMap.getInstance().update();
 		if (board.isEnd()) {
 			System.out.println("Game Over   " + board.getLatestPiece().getColor().toString());
 			endGame();
@@ -201,4 +199,5 @@ public class GoBangGUI implements Observer{
 		blackPlayerPanel.end();
 		agents.clear();
 	}
+
 }
