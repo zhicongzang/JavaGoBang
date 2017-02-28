@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.print.attribute.standard.RequestingUserName;
+import javax.xml.crypto.Data;
 
 public class AINode {
 	
@@ -12,9 +13,12 @@ public class AINode {
 	private BoardData boardData = new BoardData();
 	private Position position;
 	private Position winPosition;
-	private List<Position> dangerousPositions = new ArrayList<>();
+	private List<Position> highDangerousPositions = new ArrayList<>();
+	private List<Position> fourInLinePositions = new ArrayList<>();
+	private List<Position> lowDangerousPositions = new ArrayList<>();
 	private List<Position> possiblePositions = new ArrayList<>();
 	private AINode subNode;
+	private boolean isOnlyNode = false;
 	
 	@Override
 	public int hashCode() {
@@ -54,11 +58,13 @@ public class AINode {
 		this.subNode = subNode;
 	}
 	
-	public boolean needMoreThink() {
-		return dangerousPositions.size() > 0;
+	public boolean isOnlyNode() {
+		return isOnlyNode;
 	}
-	
-	
+
+	public void setOnlyNode(boolean isOnlyNode) {
+		this.isOnlyNode = isOnlyNode;
+	}
 
 	/*
 	 * Get color
@@ -102,7 +108,9 @@ public class AINode {
 	
 	private void generatePossiblePositions() {
 		possiblePositions.clear();
-		dangerousPositions.clear();
+		highDangerousPositions.clear();
+		fourInLinePositions.clear();
+		lowDangerousPositions.clear();
 		winPosition = null;
 		// Check win Position
 		for(int c=0; c<15; c++) {
@@ -110,7 +118,7 @@ public class AINode {
 				if (positionIsValid(c, r, 1, 1)) {
 					Position p = new Position(c, r);
 					possiblePositions.add(p);
-					if (Utils.checkIsWin(boardData.getData(), getColor().changeColor(), c, r)) {
+					if (checkWinPositionAndFourInLine(p)) {
 						winPosition = p;
 						return;
 					}
@@ -122,14 +130,18 @@ public class AINode {
 		evaluatePositionsRow();
 		evaluatePositionsLeftBottom();
 		evaluatePositionsLeftTop();
-		if (possiblePositions.size() > 0) {
+		if (highDangerousPositions.size() > 0) {
 			return;
 		}
 		// Generate neighbor positions
 		for(int c=0; c<15; c++) {
 			for(int r=0; r< 15; r++) {
 				if (positionIsValid(c, r, 2, 2)) {
-					possiblePositions.add(new Position(c, r));
+					Position p = new Position(c, r);
+					possiblePositions.add(p);
+					if (lowDangerousPositions.size() > 0) {
+						checkWinPositionAndFourInLine(p);
+					}
 				}
 			}
 		}
@@ -184,7 +196,7 @@ public class AINode {
                 emptyCount += 1;
             }
         }
-        addToPossiblePositions(ps, count, isDead);
+        addToDangerousPositions(ps, count, isDead);
     }
 	
 	private void evaluatePositionsRow() {
@@ -236,7 +248,7 @@ public class AINode {
                 emptyCount += 1;
             }
         }
-        addToPossiblePositions(ps, count, isDead);
+        addToDangerousPositions(ps, count, isDead);
     }
 	
 	private void evaluatePositionsLeftTop() {
@@ -294,7 +306,7 @@ public class AINode {
                 emptyCount += 1;
             }
         }
-        addToPossiblePositions(ps, count, isDead);
+        addToDangerousPositions(ps, count, isDead);
 	}
 	
 	private void evaluatePositionsLeftBottom() {
@@ -352,13 +364,13 @@ public class AINode {
                 emptyCount += 1;
             }
         }
-        addToPossiblePositions(ps, count, isDead);
+        addToDangerousPositions(ps, count, isDead);
 	}
 	
-	private void addToPossiblePositions(ArrayList<Position> ps, int count, boolean isDead) {
+	private void addToDangerousPositions(ArrayList<Position> ps, int count, boolean isDead) {
 		switch (count) {
         case 5:
-            dangerousPositions.addAll(ps);
+            highDangerousPositions.addAll(ps);
             break;
         case 4:
             for(Position p: ps) {
@@ -367,15 +379,15 @@ public class AINode {
                 PieceColor[][] data = boardData.getData();
                 if (pr+1<15 && data[pc][pr+1] != null
                         && pr-1>=0 && data[pc][pr-1] != null) {
-                    possiblePositions.add(p);
+                	highDangerousPositions.add(p);
                     return;
                 }
             }
-            dangerousPositions.addAll(ps);
+            highDangerousPositions.addAll(ps);
             break;
         case 3:
             if (!isDead) {
-            	dangerousPositions.addAll(ps);
+            	lowDangerousPositions.addAll(ps);
             }
             break;
         default:
@@ -405,6 +417,192 @@ public class AINode {
 		return false;
 	}
 	
+	private boolean checkWinPositionAndFourInLine(Position position) {
+		return checkWinPositionAndFourInLineByColumn(position) || checkWinPositionAndFourInLineByRow(position) 
+				|| checkWinPositionAndFourInLineByLeftTop(position) || checkWinPositionAndFourInLineByLeftBottom(position);
+	}
+	
+	private boolean checkWinPositionAndFourInLineByColumn(Position position) {
+		int col = position.col;
+		int row = position.row;
+		PieceColor[][] data = boardData.getData();
+		PieceColor color = getColor().changeColor();
+		boolean hasEmpty = false;
+		int r = row - 1;
+        int count = 1;
+        while(r>=0) {
+            if (data[col][r] != null && data[col][r].equals(color)) {
+                count += 1;
+                r -= 1;
+            } else {
+            	if (data[col][r] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        r = row + 1;
+        while(r<15) {
+            if (data[col][r] != null && data[col][r].equals(color)) {
+                count += 1;
+                r += 1;
+            } else {
+            	if (data[col][r] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        if (count == 4 && hasEmpty) {
+        	fourInLinePositions.add(position);
+        }
+        return false;
+	}
+	
+	private boolean checkWinPositionAndFourInLineByRow(Position position) {
+		int col = position.col;
+		int row = position.row;
+		PieceColor[][] data = boardData.getData();
+		PieceColor color = getColor().changeColor();
+		boolean hasEmpty = false;
+		int c = col - 1;
+        int count = 1;
+        while(c>=0) {
+            if (data[c][row] != null && data[c][row].equals(color)) {
+                count += 1;
+                c -= 1;
+            } else {
+            	if (data[c][row] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        c = col + 1;
+        while(c<15) {
+            if (data[c][row] != null && data[c][row].equals(color)) {
+                count += 1;
+                c += 1;
+            } else {
+            	if (data[c][row] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        if (count == 4 && hasEmpty) {
+        	fourInLinePositions.add(position);
+        }
+        return false;
+	}
+	
+	private boolean checkWinPositionAndFourInLineByLeftTop(Position position) {
+		int col = position.col;
+		int row = position.row;
+		PieceColor[][] data = boardData.getData();
+		PieceColor color = getColor().changeColor();
+		boolean hasEmpty = false;
+		int c = col - 1;
+	    int r = row - 1;
+        int count = 1;
+        while(c>=0 && r>=0) {
+            if (data[c][r] != null && data[c][r].equals(color)) {
+                count += 1;
+                c -= 1;
+                r -= 1;
+            } else {
+            	if (data[c][r] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        c = col + 1;
+        r = row + 1;
+        while(c<15 && r<15) {
+            if (data[c][r] != null && data[c][r].equals(color)) {
+                count += 1;
+                c += 1;
+                r +=1;
+            } else {
+            	if (data[c][r] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        if (count == 4 && hasEmpty) {
+        	fourInLinePositions.add(position);
+        }
+        return false;
+	}
+	
+	private boolean checkWinPositionAndFourInLineByLeftBottom(Position position) {
+		int col = position.col;
+		int row = position.row;
+		PieceColor[][] data = boardData.getData();
+		PieceColor color = getColor().changeColor();
+		boolean hasEmpty = false;
+		int c = col - 1;
+	    int r = row + 1;
+        int count = 1;
+        while(c>=0 && r<15) {
+            if (data[c][r] != null && data[c][r].equals(color)) {
+                count += 1;
+                c -= 1;
+                r += 1;
+            } else {
+            	if (data[c][r] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        c = col + 1;
+        r = row - 1;
+        while(c<15 && r>=0) {
+            if (data[c][r] != null && data[c][r].equals(color)) {
+                count += 1;
+                c += 1;
+                r -=1;
+            } else {
+            	if (data[c][r] == null) {
+            		hasEmpty = true;
+            	}
+                break;
+            }
+        }
+        if (count >= 5) {
+            return true;
+        }
+        if (count == 4 && hasEmpty) {
+        	fourInLinePositions.add(position);
+        }
+        return false;
+	}
+
+	
 	public int getSubNodeScore() {
 		if (subNode == null) {
 			if (score == null) {
@@ -420,14 +618,31 @@ public class AINode {
 		generatePossiblePositions();
 		if (winPosition != null) {
 			AINode node = new AINode(this, winPosition);
+			node.setOnlyNode(true);
 			if (node != null) {
 				subNodes.add(node);
 				return subNodes;
 			}
 		}
-		if (dangerousPositions.size() > 0) {
-			for(Position dangerousPosition: dangerousPositions) {
+		if (highDangerousPositions.size() > 0) {
+			for(Position dangerousPosition: highDangerousPositions) {
 				AINode node = new AINode(this, dangerousPosition);
+				if (node != null) {
+					node.setOnlyNode(highDangerousPositions.size() == 1);
+					subNodes.add(node);
+				}
+			}
+			return subNodes;
+		}
+		if (lowDangerousPositions.size() > 0) {
+			for(Position dangerousPosition: lowDangerousPositions) {
+				AINode node = new AINode(this, dangerousPosition);
+				if (node != null) {
+					subNodes.add(node);
+				}
+			}
+			for(Position fourInLinePosition: fourInLinePositions) {
+				AINode node = new AINode(this, fourInLinePosition);
 				if (node != null) {
 					subNodes.add(node);
 				}
@@ -441,6 +656,18 @@ public class AINode {
 			}
 		}
 		return subNodes;
+	}
+	
+	public boolean isUnstoppable() {
+		return false;
+	}
+	
+	private boolean checkUnstoppableMax(AINode currentNode, int deep) {
+		return false;
+	}
+	
+	private boolean checkUnstoppableMin(AINode currentNode, int deep) {
+		return false;
 	}
 	
 	public Piece getPiece() {
@@ -461,7 +688,6 @@ public class AINode {
 		}
 		@Override
 		public String toString() {
-			// TODO Auto-generated method stub
 			return "Col: " + col + " Row: " + row;
 		}
 	}

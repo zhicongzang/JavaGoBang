@@ -7,13 +7,14 @@ import java.util.Random;
 
 import model.AINode;
 import model.Board;
+import model.BoardData;
 import model.Piece;
 import model.PieceColor;
 import model.Score;
 
 public class AIAgent{
 	
-	private int level = 3;
+	private int level = 4;
 	private PieceColor pieceColor;
 	private List<Piece> piecesWaitingList = new ArrayList<>();
 	
@@ -41,6 +42,9 @@ public class AIAgent{
 		if (piecesWaitingList.size() > 0) {
 			return piecesWaitingList.remove(0);
 		}
+		int score = Score.getScore(board.getBoardData());
+		System.out.println("Current: " + score);
+//		int searchDepth = ((pieceColor.equals(PieceColor.Black) && score >= 0) || (pieceColor.equals(PieceColor.White) && score < 0)) ? level + 1 : level;
 		AINode node = minimaxSearch(new AINode(board), level, Integer.MIN_VALUE, Integer.MAX_VALUE, pieceColor.equals(PieceColor.Black));
 		System.out.println(node.toString());
 		return node.getPiece();
@@ -54,15 +58,14 @@ public class AIAgent{
 	 * 	beta:			maximum value of min
 	 * 	isMax:			Ture -> do Max		False -> do Min
 	 * 	Alpha-beta pruning:		if alpha >= beta, pruning
-	 */
-	
+	 */	
 	private AINode minimaxSearch(AINode currentNode, int depth, int alpha, int beta, boolean isMax){
-		if (depth <= 0 || !currentNode.isExplorable()) {
+		if (depth <= 0 || !currentNode.isExplorable() || currentNode.isOnlyNode()) {
 			return null;
 		}
 		AINode tempNode = null;
 		for(AINode node: currentNode.exploreNodes()) {
-			node.setSubNode(minimaxSearch(node, node.needMoreThink() ? depth :depth - 1, alpha, beta, !isMax));
+			node.setSubNode(minimaxSearch(node, depth - 1, alpha, beta, !isMax));
 			if (isMax) {
 				if (tempNode == null || tempNode.getSubNodeScore() < node.getSubNodeScore()) {
 					tempNode = node;

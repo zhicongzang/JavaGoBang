@@ -316,8 +316,9 @@ public enum Score {
 		}
 		int preKey = BoardDataHashValuesManager.getInstance().getPreHashValue(boardData, col, row).hashCode();
 		if (BOARD_DATA_SCORES_MAP.containsKey(preKey)) {
-			System.out.println("Get from Map");
-			return BOARD_DATA_SCORES_MAP.get(preKey) + getChangedScore(boardData, col, row);
+			int score = BOARD_DATA_SCORES_MAP.get(preKey) + getChangedScore(boardData, col, row);
+			BOARD_DATA_SCORES_MAP.put(currentKey, score);
+			return score;
 		}
 		return Score.getScore(boardData);
 	}

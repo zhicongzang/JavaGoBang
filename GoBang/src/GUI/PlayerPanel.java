@@ -88,7 +88,7 @@ public class PlayerPanel extends JPanel {
 		gbc_lblAILevel.gridy = 1;
 		
 		txtAILevel = new TextField();
-		txtAILevel.setText("3");
+		txtAILevel.setText("4");
 		GridBagConstraints gbc_txtAILevel = new GridBagConstraints();
 		gbc_txtAILevel.anchor = GridBagConstraints.WEST;
 		gbc_txtAILevel.insets = new Insets(0, 0, 5, 0);
