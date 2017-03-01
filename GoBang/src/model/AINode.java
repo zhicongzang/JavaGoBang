@@ -1,13 +1,7 @@
 package model;
 
-import java.awt.datatransfer.FlavorTable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-
-import javax.print.attribute.standard.RequestingUserName;
-import javax.swing.plaf.basic.BasicInternalFrameTitlePane.IconifyAction;
-import javax.xml.crypto.Data;
 
 public class AINode {
 	
@@ -79,6 +73,10 @@ public class AINode {
 	public List<Position> getFourInLinePositions() {
 		return fourInLinePositions;
 	}
+	
+	public void setScore(int score) {
+		this.score = score;
+	}
 
 
 	/*
@@ -130,7 +128,7 @@ public class AINode {
 		// Check win Position
 		for(int c=0; c<15; c++) {
 			for(int r=0; r< 15; r++) {
-				if (positionIsValid(c, r, 1, 1)) {
+				if (positionIsValid(c, r, 1, 1) || positionIsValid(c, r, 2, 2)) {
 					Position p = new Position(c, r);
 					possiblePositions.add(p);
 					if (checkWinPositionAndFourInLine(p)) {
@@ -147,16 +145,6 @@ public class AINode {
 		evaluatePositionsLeftTop();
 		if (highDangerousPositions.size() > 0) {
 			return;
-		}
-		// Generate neighbor positions
-		for(int c=0; c<15; c++) {
-			for(int r=0; r< 15; r++) {
-				if (positionIsValid(c, r, 2, 2)) {
-					Position p = new Position(c, r);
-					possiblePositions.add(p);
-					checkWinPositionAndFourInLine(p);
-				}
-			}
 		}
 	}
 	
@@ -177,7 +165,9 @@ public class AINode {
                 r -= 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -198,7 +188,9 @@ public class AINode {
                 r += 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -229,7 +221,9 @@ public class AINode {
                 c -= 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -250,7 +244,9 @@ public class AINode {
                 c += 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -283,7 +279,9 @@ public class AINode {
                 r -= 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -307,7 +305,9 @@ public class AINode {
                 r += 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -341,7 +341,9 @@ public class AINode {
                 r += 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+           		 	isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -365,7 +367,9 @@ public class AINode {
                 r -= 1;
                 lastIsEmpty = false;
             } else if (color != null) {
-                isDead = true;
+            	if (!lastIsEmpty) {
+            		isDead = true;
+            	}
                 break;
             } else if (lastIsEmpty || emptyCount > 1) {
                 break;
@@ -730,7 +734,7 @@ public class AINode {
 		}
 		for (Position position: fourInLinePositions) {
 			AINode node = new AINode(this, position);
-			if (node != null && checkUnstoppableMin(node, 12)) {
+			if (node != null && checkUnstoppableMin(node, 16)) {
 				return node;
 			}
 		}
@@ -753,14 +757,15 @@ public class AINode {
 	
 	// AND win
 	static private boolean checkUnstoppableMin(AINode currentNode, int deep) {
-		if (deep <= 0) {
+		if (currentNode.getWinPosition() != null) {
 			return false;
 		}
-		int score = Score.getChangedScore(currentNode.getBoardData(), currentNode.getPiece().getCol(), currentNode.getPiece().getRow());
+		int score = Score.getPieceScoreByAINode(currentNode);
 		if (score > Score.UNSTOPPABLE_SCORE || score < -Score.UNSTOPPABLE_SCORE) {
+			currentNode.setScore(score > Score.UNSTOPPABLE_SCORE ? Score.UNSTOPPABLE_WIN_SCORE : -Score.UNSTOPPABLE_WIN_SCORE);
 			return true;
 		}
-		if (currentNode.getWinPosition() != null) {
+		if (deep <= 0 || currentNode.getHighDangerousPositions().size() <= 0) {
 			return false;
 		}
 		for (Position position: currentNode.getHighDangerousPositions()) {
@@ -769,7 +774,7 @@ public class AINode {
 				return false;
 			}
 		}
-		return false;
+		return true;
 	}
 	
 	public Piece getPiece() {

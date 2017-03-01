@@ -64,7 +64,7 @@ public class AIAgent{
 			return null;
 		}
 		currentNode.generatePossiblePositions();
-		AINode tempNode = (depth%2 == 0) ? currentNode.unstoppableSubNode(): null;
+		AINode tempNode = (depth%2 == level%2) ? currentNode.unstoppableSubNode(): null;
 		if (tempNode != null) {
 			System.out.println("Unstoppable: " + tempNode.toString());
 			return tempNode;
@@ -82,7 +82,7 @@ public class AIAgent{
 				}
 				beta = Math.min(beta, node.getSubNodeScore());
 			}
-			if (alpha >= beta || alpha > Score.WIN_SCORE || beta < Score.LOSE_SCORE) {
+			if (alpha >= beta || alpha > Score.WIN_SCORE || beta < -Score.WIN_SCORE) {
 				break;
 			}
 		}

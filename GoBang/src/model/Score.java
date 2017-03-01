@@ -15,8 +15,8 @@ public enum Score {
 	ONE, ZERO;
 	
 	static public int WIN_SCORE = 80000;
-	static public int LOSE_SCORE = -80000;
-	static public int UNSTOPPABLE_SCORE = 2000;
+	static public int UNSTOPPABLE_SCORE = 1900;
+	static public int UNSTOPPABLE_WIN_SCORE = 123456;
 	
 	static final private Map<Score, Integer> SCORE_MAP = new HashMap<Score, Integer>() {{
 		put(FIVE, 100000);
@@ -64,7 +64,7 @@ public enum Score {
 	
 	static public int getScore(ArrayList<PieceColor> line) {
 		int score = 0;
-		boolean isDead = false;
+		boolean isDead = (line.get(0) != null);
 		int count = 0;
 		boolean hasBlank = false;
 		for(int i=0; i<line.size(); i++) {
@@ -103,10 +103,17 @@ public enum Score {
 				}
 			}
 		}
-		score += Score.getSocre(count, isDead).getScore();
+		if (!isDead) {
+			isDead = true;
+			score += Score.getSocre(count, isDead).getScore();
+			
+		} else if (count > 4 || (count >= 4 && hasBlank)) {
+			score += Score.getSocre(count, isDead).getScore();
+		}
 		
-		isDead = false;
+		isDead = (line.get(0) != null);
 		count = 0;
+		hasBlank = false;
 		for(int i=0; i<line.size(); i++) {
 			if (line.get(i) == null) {
 				if(i>0&&line.get(i-1) == null) {
@@ -143,7 +150,13 @@ public enum Score {
 				}
 			}
 		}
-		score -= Score.getSocre(count, isDead).getScore();
+		if (!isDead) {
+			isDead = true;
+			score -= Score.getSocre(count, isDead).getScore();
+			
+		} else if (count > 4 || (count >= 4 && hasBlank)) {
+			score -= Score.getSocre(count, isDead).getScore();
+		}
 		return score;
 	}
 	
@@ -293,7 +306,7 @@ public enum Score {
 		
 	}
 	
-	static public int getChangedScore(BoardData boardData, int col, int row) {
+	static private int getChangedScore(BoardData boardData, int col, int row) {
 		PieceColor[][] data = boardData.getData();
 		PieceColor pieceColor = data[col][row];
 		data[col][row] = null;
@@ -301,6 +314,10 @@ public enum Score {
 		data[col][row] = pieceColor;
 		score += getScoreByPosition(data, col, row);
 		return score;
+	}
+	
+	static public int getPieceScoreByAINode(AINode node) {
+		return getScoreByPosition(node.getBoardData().getData(), node.getPiece().getCol(), node.getPiece().getRow());
 	}
 	
 	static public int getScore(BoardData preBoardData, BoardData currentBoardData, int col, int row) {
