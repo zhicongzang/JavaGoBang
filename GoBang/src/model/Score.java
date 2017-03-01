@@ -16,6 +16,7 @@ public enum Score {
 	
 	static public int WIN_SCORE = 80000;
 	static public int LOSE_SCORE = -80000;
+	static public int UNSTOPPABLE_SCORE = 2000;
 	
 	static final private Map<Score, Integer> SCORE_MAP = new HashMap<Score, Integer>() {{
 		put(FIVE, 100000);
@@ -292,7 +293,7 @@ public enum Score {
 		
 	}
 	
-	static private int getChangedScore(BoardData boardData, int col, int row) {
+	static public int getChangedScore(BoardData boardData, int col, int row) {
 		PieceColor[][] data = boardData.getData();
 		PieceColor pieceColor = data[col][row];
 		data[col][row] = null;

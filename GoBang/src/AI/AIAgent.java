@@ -63,7 +63,12 @@ public class AIAgent{
 		if (depth <= 0 || !currentNode.isExplorable() || currentNode.isOnlyNode()) {
 			return null;
 		}
-		AINode tempNode = null;
+		currentNode.generatePossiblePositions();
+		AINode tempNode = (depth%2 == 0) ? currentNode.unstoppableSubNode(): null;
+		if (tempNode != null) {
+			System.out.println("Unstoppable: " + tempNode.toString());
+			return tempNode;
+		}
 		for(AINode node: currentNode.exploreNodes()) {
 			node.setSubNode(minimaxSearch(node, depth - 1, alpha, beta, !isMax));
 			if (isMax) {
