@@ -11,9 +11,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.crypto.AEADBadTagException;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
@@ -36,6 +38,7 @@ public class GoBangGUI implements Observer{
 	private PlayerPanel blackPlayerPanel;
 	private PlayerPanel whitePlayerPanel;
 	private JButton goButton;
+	private JButton undoButton;
 	private Board board = new Board();
 	private List<AIAgent> agents = new ArrayList<>();
 	private ExecutorService executor = Executors.newSingleThreadExecutor();
@@ -86,7 +89,7 @@ public class GoBangGUI implements Observer{
 				Point point = e.getPoint();
 				Piece piece = board.addPiece(boardPanel.pointToCol(point), boardPanel.pointToRow(point));
 				if (piece != null) {
-					boardPanel.addPiece(piece);
+					boardPanel.addPiece(piece, showResult);
 				}
 			}
 			
@@ -120,6 +123,14 @@ public class GoBangGUI implements Observer{
 			startGame();
 		});
 		
+		undoButton = new JButton("Undo");
+		undoButton.setBounds(730, 420, 100, 40);
+		frame.getContentPane().add(undoButton);
+		undoButton.addActionListener(ae -> {
+			undo();
+		});
+		
+		
 		board.addObserver(this);
 		
 		endGame();
@@ -140,20 +151,22 @@ public class GoBangGUI implements Observer{
 	private void changeSide(PieceColor pieceColor) {
 		System.out.println("Now: " + Score.getScoreWithoutMap(board.getBoardData()));
 		System.out.println("================");
-		if (board.isEnd()) {
-			System.out.println("Game Over   " + board.getLatestPiece().getColor().toString());
+		if (board.isEnd() || board.isTie()) {
 			endGame();
 			return;
 		}
 		switch (agents.size()) {
 		case 0:
 			boardPanel.setTouchable(true);
+			undoButton.setEnabled(true);
 			break;
 		case 1:
 			boardPanel.setTouchable(!pieceColor.equals(agents.get(0).getPieceColor()));
+			undoButton.setEnabled(!pieceColor.equals(agents.get(0).getPieceColor()));
 			break;
 		default:
 			boardPanel.setTouchable(false);
+			undoButton.setEnabled(false);
 			break;
 		}
 		whitePlayerPanel.setInTurns(pieceColor);
@@ -164,7 +177,7 @@ public class GoBangGUI implements Observer{
 					Piece piece = agent.run(board);
 					piece = board.addPiece(piece.getCol(), piece.getRow());
 					if (piece != null) {
-						boardPanel.addPiece(piece);
+						boardPanel.addPiece(piece, showResult);
 					}
 				});
 			}
@@ -178,6 +191,7 @@ public class GoBangGUI implements Observer{
 		AIAgent whiteAgent = whitePlayerPanel.start();
 		AIAgent blackAgent = blackPlayerPanel.start();
 		goButton.setEnabled(false);
+		undoButton.setEnabled(true);
 		if (blackAgent != null) {
 			agents.add(blackAgent);
 		}
@@ -195,9 +209,27 @@ public class GoBangGUI implements Observer{
 	private void endGame() {
 		boardPanel.setTouchable(false);
 		goButton.setEnabled(true);
+		undoButton.setEnabled(false);
 		whitePlayerPanel.end();
 		blackPlayerPanel.end();
 		agents.clear();
 	}
-
+	
+	private void undo() {
+		board.undo(boardPanel.undo());
+		
+	}
+	
+	Callable<Void> showResult = new Callable<Void>() {
+		@Override
+		public Void call() throws Exception {
+			if (board.isEnd()) {
+				JOptionPane.showConfirmDialog(null, board.getLatestPiece().getColor().toString().toUpperCase() + " Win", "Game Over", JOptionPane.WARNING_MESSAGE);
+			} else if (board.isTie()) {
+				JOptionPane.showConfirmDialog(null, "Tie", "Game Over", JOptionPane.WARNING_MESSAGE);
+			}
+			return null;
+		}
+	};
+	
 }

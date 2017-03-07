@@ -728,13 +728,13 @@ public class AINode {
 		return subNodes;
 	}
 	
-	public AINode unstoppableSubNode() {
+	public AINode unstoppableSubNode(int depth) {
 		if (winPosition != null ||highDangerousPositions.size() > 0 || fourInLinePositions.size() <= 0) {
 			return null;
 		}
 		for (Position position: fourInLinePositions) {
 			AINode node = new AINode(this, position);
-			if (node != null && checkUnstoppableMin(node, 16)) {
+			if (node != null && checkUnstoppableMin(node, depth)) {
 				return node;
 			}
 		}

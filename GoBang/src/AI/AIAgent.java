@@ -8,6 +8,7 @@ import java.util.Random;
 import model.AINode;
 import model.Board;
 import model.BoardData;
+import model.OpeningBook;
 import model.Piece;
 import model.PieceColor;
 import model.Score;
@@ -16,16 +17,10 @@ public class AIAgent{
 	
 	private int level = 4;
 	private PieceColor pieceColor;
-	private List<Piece> piecesWaitingList = new ArrayList<>();
 	
 	public AIAgent(PieceColor pieceColor) {
 		// TODO Auto-generated constructor stub
 		this.pieceColor = pieceColor;
-		if (pieceColor.equals(PieceColor.Black)) {
-			piecesWaitingList.add(new Piece(7, 7, pieceColor));
-		} else {
-			piecesWaitingList.add(randomNeighborPiece(7, 7, pieceColor));
-		}
 	}
 	
 	private Piece randomNeighborPiece(int col, int row, PieceColor pieceColor) {
@@ -39,8 +34,9 @@ public class AIAgent{
 	}
 	
 	public Piece run(Board board) {
-		if (piecesWaitingList.size() > 0) {
-			return piecesWaitingList.remove(0);
+		Piece p = OpeningBook.getInstance().getPiece(board.getBoardData().getHashValue());
+		if (p != null) {
+			return p;
 		}
 		int score = Score.getScore(board.getBoardData());
 		System.out.println("Current: " + score);
@@ -64,9 +60,8 @@ public class AIAgent{
 			return null;
 		}
 		currentNode.generatePossiblePositions();
-		AINode tempNode = (depth%2 == level%2) ? currentNode.unstoppableSubNode(): null;
+		AINode tempNode = (depth%2 == level%2) ? currentNode.unstoppableSubNode(level * 4): currentNode.unstoppableSubNode(level * 2);
 		if (tempNode != null) {
-			System.out.println("Unstoppable: " + tempNode.toString());
 			return tempNode;
 		}
 		for(AINode node: currentNode.exploreNodes()) {

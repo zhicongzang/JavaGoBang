@@ -18,6 +18,9 @@ public class BoardDataHashValuesManager {
 	
 	static private final BoardDataHashValuesManager instance = new BoardDataHashValuesManager();
 	
+	static private final String BLACK = "0";
+	static private final String WHITE = "1";
+	
 	private Map<PieceColor, Long[][]> boardDataHashValues = new HashMap<>();
 	
 	private BoardDataHashValuesManager() {
@@ -88,5 +91,20 @@ public class BoardDataHashValuesManager {
 	
 	public Long getPreHashValue(BoardData boardData, int col, int row) {
 		return (boardData.getHashValue() ^ BoardDataHashValuesManager.getInstance().getHashValue(col, row, boardData.getData()[col][row]));
+	}
+	
+	/*
+	 *  key: col,row,color
+	 */
+	public Long getHashValue(String key) {
+		String[] info = key.split(",");
+		switch (info[2]) {
+		case BLACK:
+			return boardDataHashValues.get(PieceColor.Black)[Integer.parseInt(info[0])][Integer.parseInt(info[1])];
+		case WHITE:
+			return boardDataHashValues.get(PieceColor.White)[Integer.parseInt(info[0])][Integer.parseInt(info[1])];
+		default:
+			return null;
+		}
 	}
 }

@@ -1,6 +1,9 @@
 package model;
 
+import java.util.ArrayList;
 import java.util.Observable;
+
+import javax.swing.undo.UndoableEdit;
 
 public class Board extends Observable {
 	
@@ -56,6 +59,25 @@ public class Board extends Observable {
 		return null;
 	}
 	
+	public void undo(ArrayList<Piece> undoPiece) {
+		if (undoPiece.size() <= 0) {
+			return;
+		}
+		if (undoPiece.size() < 3) {
+			latestPiece = null;
+			currentPieceColor = PieceColor.Black;
+		} else {
+			latestPiece = undoPiece.remove(undoPiece.size() - 1);
+			currentPieceColor = latestPiece.getColor().changeColor();
+		}
+		for (Piece piece: undoPiece) {
+			boardData.undoPiece(piece);
+		}
+		setChanged();
+		notifyObservers();
+	}
+	
+	
 	/*
 	 * 	If someone wins or board is filled, game over.
 	 */
@@ -64,6 +86,10 @@ public class Board extends Observable {
 			return false;
 		}
 		return checkLatestPieceWinState();
+	}
+	
+	public boolean isTie() {
+		return boardData.isFilled();
 	}
 	
 	private boolean checkLatestPieceWinState() {

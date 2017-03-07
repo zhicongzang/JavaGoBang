@@ -1,9 +1,11 @@
 package GUI;
 
+import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
@@ -20,6 +22,7 @@ public class BoardPanel extends JPanel {
 	private int boardGap = 0; 
 	private int lineGap = 0;
 	private int pieceWidth = 0;
+	private int frameLineDistance = 0;
 	
 	private List<Piece> pieces = new ArrayList<>();
 	
@@ -37,7 +40,7 @@ public class BoardPanel extends JPanel {
 		lineGap = (width * 3) / 46;
 		boardGap = lineGap / 3 * 2;
 		pieceWidth = lineGap - PIECES_GAP;
-		
+		frameLineDistance = pieceWidth / 3;
 		
 	}
 	
@@ -58,6 +61,9 @@ public class BoardPanel extends JPanel {
 			Point point = pieceCoordinateToPoint(p);
 			g.drawImage(p.getColor().getPaint(), point.x, point.y, pieceWidth, pieceWidth, this);
 		}
+		if (pieces.size() > 0) {
+			drawFrame(g, pieceCoordinateToPoint(pieces.get(pieces.size() - 1)));
+		}
 	}
 	
 	/*
@@ -72,6 +78,19 @@ public class BoardPanel extends JPanel {
 	 */
 	private Point pieceCoordinateToPoint(Piece piece) {
 		return new Point(boardGap + piece.getCol() * lineGap - pieceWidth / 2, boardGap + piece.getRow() * lineGap - pieceWidth / 2); 
+	}
+	
+	private void drawFrame(Graphics g, Point point) { 
+		g.setColor(Color.RED);
+		g.drawLine(point.x, point.y, point.x + frameLineDistance, point.y);
+		g.drawLine(point.x + pieceWidth - frameLineDistance, point.y, point.x + pieceWidth, point.y);
+		g.drawLine(point.x, point.y + pieceWidth, point.x + frameLineDistance, point.y + pieceWidth);
+		g.drawLine(point.x + pieceWidth - frameLineDistance, point.y + pieceWidth, point.x + pieceWidth, point.y + pieceWidth);
+		g.drawLine(point.x, point.y, point.x, point.y + frameLineDistance);
+		g.drawLine(point.x, point.y + pieceWidth - frameLineDistance, point.x, point.y + pieceWidth);
+		g.drawLine(point.x + pieceWidth, point.y, point.x + pieceWidth, point.y + frameLineDistance);
+		g.drawLine(point.x + pieceWidth, point.y + pieceWidth - frameLineDistance, point.x + pieceWidth, point.y + pieceWidth);
+		
 	}
 	
 	/*
@@ -91,9 +110,14 @@ public class BoardPanel extends JPanel {
 	/*
 	 * Add piece
 	 */
-	public void addPiece(Piece piece) {
+	public void addPiece(Piece piece, Callable<Void> showResult) {
 		pieces.add(piece);
 		repaint();
+		try {
+			showResult.call();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/*
@@ -111,6 +135,22 @@ public class BoardPanel extends JPanel {
 
 	public void setTouchable(boolean isTouchable) {
 		this.isTouchable = isTouchable;
+	}
+	
+	public ArrayList<Piece> undo() {
+		ArrayList<Piece> undoPieces = new ArrayList<>();
+		for(int i=0;i<2;i++) {
+			if (pieces.size() <= 0) {
+				break;
+			} 
+			undoPieces.add(pieces.remove(pieces.size() - 1));
+		}
+		if (pieces.size() > 0) {
+			undoPieces.add(pieces.get(pieces.size() - 1));
+		}
+		repaint();
+		return undoPieces;
+		
 	}
 	
 	

@@ -18,15 +18,15 @@ public class BoardDataScoresMap {
 	static private final BoardDataScoresMap instance = new BoardDataScoresMap();
 	
 	private Map<Integer, Integer> scores = new HashMap<>();
-	private Map<Integer, Integer> updates = new HashMap<>();
+//	private Map<Integer, Integer> updates = new HashMap<>();
 	
 	private BoardDataScoresMap() {
-		init();
-		System.out.println("******Loading Score Data successful!******");
-		System.out.println("******Data Count: " + scores.size() + ".******");
+//		init();
+//		System.out.println("******Loading Score Data successful!******");
+//		System.out.println("******Data Count: " + scores.size() + ".******");
 	}
 	
-	private void init() {
+//	private void init() {
 //		File file = new File(SCORE_DATA_FILE);
 //		FileInputStream inputStream = null;
 //		DataInputStream dataInputStream = null;
@@ -55,7 +55,7 @@ public class BoardDataScoresMap {
 //				}
 //			}
 //		}
-	}
+//	}
 	
 //	public void update() {
 //		if (updates.isEmpty()) {
@@ -97,7 +97,7 @@ public class BoardDataScoresMap {
 	
 	public void put(int key, int value) {
 		scores.put(key, value);
-		updates.put(key, value);
+//		updates.put(key, value);
 	}
 	
 	public int get(int key) {
