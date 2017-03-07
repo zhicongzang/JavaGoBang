@@ -12,6 +12,7 @@ import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
+import javax.swing.ImageIcon;
 import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import javax.swing.border.LineBorder;
@@ -22,6 +23,9 @@ import model.PieceColor;
 import model.PlayerType;
 
 public class PlayerPanel extends JPanel {
+	
+	static private final ImageIcon AI = new ImageIcon("res/AI.jpg");
+	static private final ImageIcon PLAYER = new ImageIcon("res/player.jpg");
 	
 	static private GridBagLayout gbl_puzzleTypePanel = new GridBagLayout()
 	{{
@@ -49,7 +53,6 @@ public class PlayerPanel extends JPanel {
 	
 	private void init() {
 		setLayout(null);
-		photoPanel = new JPanel();
 		piecePanel = new JPanel() {
 			@Override
 			protected void paintComponent(Graphics g) {
@@ -76,8 +79,23 @@ public class PlayerPanel extends JPanel {
 			public void itemStateChanged(ItemEvent e) {
 				// TODO Auto-generated method stub
 				setAIConfigurable(((PlayerType) e.getItem()).equals(PlayerType.AI));
+				photoPanel.repaint();
 			}
 		});
+		
+		photoPanel = new JPanel() {
+			@Override
+			protected void paintComponent(Graphics g) {
+				// TODO Auto-generated method stub
+				super.paintComponent(g);
+				if (((PlayerType) playerTypeComboxBox.getSelectedItem()).equals(PlayerType.AI)) {
+					g.drawImage(AI.getImage(), 0, 0, photoPanel.getWidth(), photoPanel.getHeight(), this);
+				} else {
+					g.drawImage(PLAYER.getImage(), 0, 0, photoPanel.getWidth(), photoPanel.getHeight(), this);
+				}
+				
+			}
+		};
 		
 		lblAILevel = new Label();
 		lblAILevel.setText("AI Level: ");
@@ -137,7 +155,7 @@ public class PlayerPanel extends JPanel {
 		super.setBounds(x, y, width, height);
 		
 		photoPanel.setBounds(GAP,GAP, width - 2 * GAP, width - 2 * GAP);
-		photoPanel.setBackground(Color.blue);
+		
 		piecePanel.setBounds(width * 5 / 12, width + GAP, width / 6, width / 6);
 		configurePanel.setBounds(GAP, width * 7 / 6 + 2 * GAP , width - 2 * GAP, height - width * 7 / 6 - 3 * GAP);
 		

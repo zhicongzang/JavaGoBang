@@ -224,7 +224,7 @@ public class GoBangGUI implements Observer{
 		@Override
 		public Void call() throws Exception {
 			if (board.isEnd()) {
-				JOptionPane.showConfirmDialog(null, board.getLatestPiece().getColor().toString().toUpperCase() + " Win", "Game Over", JOptionPane.WARNING_MESSAGE);
+				JOptionPane.showConfirmDialog(null, board.getLatestPiece().getColor().toString().toUpperCase() + " Wins", "Game Over", JOptionPane.WARNING_MESSAGE);
 			} else if (board.isTie()) {
 				JOptionPane.showConfirmDialog(null, "Tie", "Game Over", JOptionPane.WARNING_MESSAGE);
 			}
